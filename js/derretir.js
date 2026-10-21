@@ -15,10 +15,9 @@
      en x), y se ensancha abajo como un charco; de 4 a 6 chorros por letra, de
      grosores y velocidades distintas, nacen en puntos de la base y se alargan
      hasta el borde inferior con una gota en la punta; al final todo escurre
-     fuera de pantalla. "coming soon" y la señal de bajar se funden antes de
-     que la masa llegue y el fondo pasa del gris LAB al azul claro del paso 1
-     (el lab se solapa con el final del derretido: la caballa ya cae mientras
-     el verde escurre). Al subir, todo se recompone.
+     fuera de pantalla. Lo que se pase en "fundidos" se funde antes de que la
+     masa llegue y, si fondo es true, el bloque pasa del gris LAB al color de
+     "hasta". Al subir, todo se recompone.
 
    Móvil: menos chorros, desenfoque menor y un solo filtro goo para todo el
    logo (en vez de uno por letra). prefers-reduced-motion: el logo queda quieto,
@@ -71,7 +70,7 @@ function cajaDe(segs) {
   return { x: x0, y: y0, width: x1 - x0, height: y1 - y0 };
 }
 
-export function iniciarDerretido({ seccion, pin, svg, fundidos = [], reduced = false, fondo = true, hasta = CELESTE }) {
+export function iniciarDerretido({ seccion, pin, svg, fundidos = [], reduced = false, fondo = true, hasta = CELESTE, escuchar = true }) {
   const doc = svg.ownerDocument || document;
   const angosto = window.innerWidth < 760;
   const defs = svg.querySelector('defs');
@@ -179,7 +178,6 @@ export function iniciarDerretido({ seccion, pin, svg, fundidos = [], reduced = f
     const D = vh / k + 500;   // recorrido (en unidades) que saca la masa por abajo
     letras.forEach(L => {
       const pi = clamp((p - 0.055 * L.orden) / 0.7, 0, 1);
-      if (reduced) return;
       // en reposo: sin filtro (logo idéntico al de la intro); con scroll: goo
       if (L.filtro && L.filtro !== 'todo') {
         const f = pi > 0 ? L.filtro : '';
@@ -207,13 +205,13 @@ export function iniciarDerretido({ seccion, pin, svg, fundidos = [], reduced = f
     });
     if (todo) { const f = p > 0 ? 'url(#goo-todo)' : ''; if (f !== todo.style.filter) todo.style.filter = f; }
     // lo que quede del logo se desvanece antes de que el fondo termine de pasar a celeste
-    svg.style.opacity = reduced ? String(1 - p) : String(1 - smooth(tramo(p, 0.45, 0.58)));
+    svg.style.opacity = String(1 - smooth(tramo(p, 0.45, 0.58)));
     // "coming soon" y la señal de bajar se funden antes de que la masa llegue abajo
     const f = 1 - clamp(p / 0.22, 0, 1);
     fundidos.forEach(e => {
       e.style.opacity = String(f);
       e.style.visibility = f > 0 ? '' : 'hidden';
-      e.style.transform = reduced ? '' : `translateY(${((1 - f) * 40).toFixed(1)}px)`;
+      e.style.transform = `translateY(${((1 - f) * 40).toFixed(1)}px)`;
     });
     if (fondo) pin.style.backgroundColor = mezcla(GRIS, hasta, smooth(tramo(p, 0.45, 0.95)));
     doc.body.classList.toggle('derritiendo', p > 0.02);
@@ -224,13 +222,17 @@ export function iniciarDerretido({ seccion, pin, svg, fundidos = [], reduced = f
     return clamp(-r.top / Math.max(1, r.height - vh), 0, 1);
   }
   function leer() {
-    const p = activo ? progreso() : 0;   // durante la intro el logo no se mueve
+    if (!activo) return;   // durante la intro no se toca nada (ni el logo ni los fundidos)
+    const p = progreso();
     if (p === pPrev) return;
     pPrev = p;
     aplicar(p);
   }
-  window.addEventListener('scroll', leer, { passive: true });
-  window.addEventListener('resize', () => { pPrev = -1; leer(); }, { passive: true });
+  // escuchar: false cuando quien lo usa ya agrupa el scroll en un cuadro y llama a leer()
+  if (escuchar) {
+    window.addEventListener('scroll', leer, { passive: true });
+    window.addEventListener('resize', () => { pPrev = -1; leer(); }, { passive: true });
+  }
 
   return {
     // cuando la intro terminó (body.listo): el derretido toma el scroll actual

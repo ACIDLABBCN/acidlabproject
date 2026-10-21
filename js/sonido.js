@@ -27,6 +27,9 @@ export const ESCALA = [0, 0, 0, 12, 3, 7, 10, 1, -2, 5];
 
 export function crearSonido() {
   let ctx = null, master = null, ruido = null, mudo = false;
+  // salida: adonde conectan los instrumentos. Los toques sueltos van directo al master; el
+  // secuenciador usa un bus propio que se apaga en stop (así no quedan notas ya programadas sonando)
+  let salida = null, bus = null, ciclo = 0;
   const patron = Object.fromEntries(FILAS.map(f => [f, Array(16).fill(null)]));
   let tocando = false, paso = 0, proximo = 0, timer = 0, bpm = BPM;
   const oyentes = [];
@@ -43,11 +46,21 @@ export function crearSonido() {
     master = ctx.createGain();
     master.gain.value = mudo ? 0 : 0.8;
     master.connect(comp).connect(ctx.destination);
+    salida = master;
     const n = ctx.sampleRate;
     ruido = ctx.createBuffer(1, n, n);
     const d = ruido.getChannelData(0);
     for (let i = 0; i < n; i++) d[i] = r() * 2 - 1;
     return ctx;
+  }
+  // primer gesto real (touchend, click, tecla): reanuda el audio. En iPhone un pointerdown
+  // táctil no cuenta como gesto, así que lo que se tocó antes queda programado y suena aquí
+  function desbloquear() {
+    if (!asegurar()) return;
+    if (ctx.state !== 'running') ctx.resume();
+    const s = ctx.createBufferSource();
+    s.buffer = ctx.createBuffer(1, 1, 22050);
+    s.connect(ctx.destination); s.start(0);
   }
 
   function saturador(k) {
@@ -81,11 +94,11 @@ export function crearSonido() {
     o.frequency.setValueAtTime(v ? entre(140, 190) : 160, t);
     o.frequency.exponentialRampToValueAtTime(grave, t + 0.09);
     env(g, t, 1.15, 0.003, cola);
-    o.connect(sat).connect(g).connect(master);
+    o.connect(sat).connect(g).connect(salida);
     o.start(t); o.stop(t + cola + 0.03);
     const gc = ctx.createGain();
     env(gc, t, 0.22, 0.001, 0.012);
-    gc.connect(master);
+    gc.connect(salida);
     ruidoA(t, 0.02, [['highpass', 3000]], gc);
   }
 
@@ -95,7 +108,7 @@ export function crearSonido() {
     hp.type = 'highpass'; hp.frequency.value = 7000;
     const largo = v ? (r() < 0.25 ? entre(0.14, 0.24) : entre(0.03, 0.07)) : 0.045;
     env(g, t, 0.28 * vel, 0.001, largo);
-    bp.connect(hp).connect(g).connect(master);
+    bp.connect(hp).connect(g).connect(salida);
     const base = v ? entre(36, 46) : 40;
     for (const k of [2, 3, 4.16, 5.43, 6.79, 8.21]) {
       const o = ctx.createOscillator();
@@ -107,7 +120,7 @@ export function crearSonido() {
   function caja(t, v = false) {
     const g = ctx.createGain(), sat = saturador(1.8);
     g.gain.value = 1;
-    sat.connect(g).connect(master);
+    sat.connect(g).connect(salida);
     const f = v ? entre(1000, 1800) : 1300, cola = v ? entre(0.14, 0.28) : 0.2;
     // cuerpo: golpe tonal corto
     const o = ctx.createOscillator(), go = ctx.createGain();
@@ -137,7 +150,7 @@ export function crearSonido() {
     g.gain.setValueAtTime(0.0001, t);
     g.gain.linearRampToValueAtTime(0.16 * vel, t + largo * 0.45);
     g.gain.exponentialRampToValueAtTime(0.0001, t + largo);
-    g.connect(master);
+    g.connect(salida);
     ruidoA(t, largo, [['highpass', v ? entre(4500, 7500) : 6000], ['peaking', 9000, 1]], g);
   }
 
@@ -149,11 +162,11 @@ export function crearSonido() {
     o.frequency.exponentialRampToValueAtTime(f, t + 0.01);
     hp.type = 'highpass'; hp.frequency.value = 300;
     env(g, t, 0.34, 0.001, v ? entre(0.03, 0.07) : 0.045);
-    o.connect(hp).connect(g).connect(master);
+    o.connect(hp).connect(g).connect(salida);
     o.start(t); o.stop(t + 0.1);
     const gc = ctx.createGain();
     env(gc, t, 0.12, 0.001, 0.008);
-    gc.connect(master);
+    gc.connect(salida);
     ruidoA(t, 0.01, [['bandpass', 3500, 2]], gc);
   }
 
@@ -169,7 +182,7 @@ export function crearSonido() {
     g.gain.exponentialRampToValueAtTime(pico, t + 0.004);
     g.gain.setValueAtTime(pico, t + dur * 0.7);
     g.gain.exponentialRampToValueAtTime(0.0001, t + dur * 1.4);
-    o.connect(f).connect(sat).connect(g).connect(master);
+    o.connect(f).connect(sat).connect(g).connect(salida);
     o.start(t); o.stop(t + dur * 1.5);
   }
   function burbuja(t, v = false) {
@@ -179,7 +192,7 @@ export function crearSonido() {
     o.frequency.setValueAtTime(f0, t);
     o.frequency.exponentialRampToValueAtTime(f0 * (v ? entre(3, 5) : 4), t + 0.06);
     env(g, t, 0.26, 0.004, 0.09);
-    o.connect(g).connect(master);
+    o.connect(g).connect(salida);
     o.start(t); o.stop(t + 0.12);
   }
   function vidrio(t, v = false) {
@@ -188,7 +201,7 @@ export function crearSonido() {
       const o = ctx.createOscillator(), g = ctx.createGain();
       o.type = 'sine'; o.frequency.value = f * k;
       env(g, t, a, 0.002, cola / k ** 0.3);
-      o.connect(g).connect(master);
+      o.connect(g).connect(salida);
       o.start(t); o.stop(t + cola + 0.05);
     }
   }
@@ -199,18 +212,18 @@ export function crearSonido() {
     o.frequency.setValueAtTime(f0, t);
     o.frequency.exponentialRampToValueAtTime(f0 * 0.25, t + 0.035);
     env(g, t, 0.42, 0.001, 0.06);
-    o.connect(g).connect(master);
+    o.connect(g).connect(salida);
     o.start(t); o.stop(t + 0.08);
     const gp = ctx.createGain();
     env(gp, t, 0.25, 0.001, 0.02);
-    gp.connect(master);
+    gp.connect(salida);
     ruidoA(t, 0.02, [['bandpass', 1600, 1.2]], gp);
     // burbujeo: ruido agudo que se apaga
     const gf = ctx.createGain();
     gf.gain.setValueAtTime(0.0001, t + 0.02);
     gf.gain.exponentialRampToValueAtTime(0.07, t + 0.05);
     gf.gain.exponentialRampToValueAtTime(0.0001, t + (v ? entre(0.18, 0.35) : 0.24));
-    gf.connect(master);
+    gf.connect(salida);
     ruidoA(t + 0.02, 0.36, [['highpass', 6500]], gf);
   }
   const notaAzar = () => ({ nota: ESCALA[Math.floor(r() * ESCALA.length)], acento: r() < 0.35 });
@@ -233,6 +246,11 @@ export function crearSonido() {
   /* ---------- secuenciador ---------- */
   const durPaso = () => 60 / bpm / 4;
   function programar() {
+    // si el navegador frenó el intervalo (pestaña de fondo, ahorro de energía), no se recuperan
+    // los pasos perdidos: se retoma desde ahora, sin amontonar notas en el pasado
+    if (proximo < ctx.currentTime - 0.03) proximo = ctx.currentTime + 0.02;
+    const antes = salida;
+    salida = bus;
     while (proximo < ctx.currentTime + 0.12) {
       const t = proximo + (paso % 2 ? (SWING - 0.5) * 2 * durPaso() : 0);
       const P = patron, i = paso;
@@ -247,19 +265,24 @@ export function crearSonido() {
       if (P.matraz[i]) burbuja(t);
       if (P.aji[i]) bajo(t, P.aji[i].nota, P.aji[i].acento, durPaso() * (P.aji[(i + 1) % 16] ? 1 : 1.6));
       const espera = Math.max(0, (t - ctx.currentTime) * 1000);
-      setTimeout(() => { if (tocando) oyentes.forEach(fn => fn(i, suenan)); }, espera);
+      const c = ciclo;
+      setTimeout(() => { if (tocando && c === ciclo) oyentes.forEach(fn => fn(i, suenan)); }, espera);
       proximo += durPaso();
       paso = (paso + 1) % 16;
     }
+    salida = antes;
   }
   function play() {
     if (!asegurar() || tocando) return;
-    tocando = true; paso = 0; proximo = ctx.currentTime + 0.06;
+    tocando = true; paso = 0; proximo = ctx.currentTime + 0.06; ciclo++;
+    bus = ctx.createGain();
+    bus.connect(master);
     programar();
     timer = setInterval(programar, 25);
   }
   function stop() {
-    tocando = false; clearInterval(timer); timer = 0;
+    tocando = false; clearInterval(timer); timer = 0; ciclo++;
+    if (bus) { bus.gain.setTargetAtTime(0, ctx.currentTime, 0.01); const b = bus; setTimeout(() => b.disconnect(), 300); bus = null; }
     oyentes.forEach(fn => fn(-1, []));
   }
 
@@ -308,6 +331,22 @@ export function crearSonido() {
     const adornos = ['tubo', 'matraz', 'cerveza'].sort(() => r() - 0.5).slice(0, 1 + Math.floor(r() * 2));
     for (const f of adornos) if (!G[f]) { const i = [3, 7, 11, 15][Math.floor(r() * 4)]; P[f][i] = true; if (r() < 0.4) P[f][(i + 8) % 16] = true; }
   }
+  // beat de arranque: el groove brejcha tal cual, con vidrio en el 8 y destape en el 16
+  function fijo() {
+    limpiar();
+    const G = GROOVES[1], P = patron;
+    for (const f of ['pez', 'cebolla', 'limon', 'coctel', 'ostra']) P[f] = golpes(G[f]);
+    P.aji = bajos(G.aji, 0);
+    P.tubo[7] = true; P.cerveza[15] = true;
+  }
+  // la casilla recién marcada suena tal como quedó guardada (el ají, con su nota)
+  function oir(fila, i) {
+    if (!asegurar()) return;
+    const t = ctx.currentTime + 0.005, n = patron[fila][i];
+    if (!n) return;
+    if (fila === 'aji') bajo(t, n.nota, n.acento, durPaso() * 1.6);
+    else ({ pez: bombo, limon: hat, cebolla: caja, coctel: shaker, ostra: rim, matraz: burbuja, tubo: vidrio, cerveza: destape })[fila](t);
+  }
   function limpiar() { FILAS.forEach(f => patron[f].fill(null)); }
   function alternar(fila, i) {
     patron[fila][i] = patron[fila][i] ? null : (fila === 'aji' ? notaAzar() : true);
@@ -320,7 +359,7 @@ export function crearSonido() {
   }
 
   return {
-    asegurar, tocar, play, stop, azar, limpiar, alternar, silenciar, fijarBpm, patron,
+    asegurar, desbloquear, tocar, oir, play, stop, azar, fijo, limpiar, alternar, silenciar, fijarBpm, patron,
     get bpm() { return bpm; },
     alPaso(fn) { oyentes.push(fn); },
     get tocando() { return tocando; },

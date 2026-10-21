@@ -158,8 +158,8 @@ export function iniciarFlotantes({ capa, reduced = false, alTocar = () => {}, no
       case 'cerveza':
         // gira, frena de a poco, se queda apuntando un rato y vuelve a girar
         it.x += it.vx * dt; it.y += it.vy * dt;
-        if (it.x < h || it.x > W - h) it.vx *= -1;
-        if (it.y < h || it.y > H - h) it.vy *= -1;
+        if (it.x < h) { it.x = h; it.vx = Math.abs(it.vx); } if (it.x > W - h) { it.x = W - h; it.vx = -Math.abs(it.vx); }
+        if (it.y < h) { it.y = h; it.vy = Math.abs(it.vy); } if (it.y > H - h) { it.y = H - h; it.vy = -Math.abs(it.vy); }
         if (e.giro > 8) { it.rot += e.giro * dt; e.giro *= 1 - Math.min(0.9, dt * 0.7); }
         else { e.pausa += dt; if (e.pausa > 1.6) { e.pausa = 0; e.giro = rr(400, 800); } }
         break;
@@ -187,10 +187,26 @@ export function iniciarFlotantes({ capa, reduced = false, alTocar = () => {}, no
   function start() { if (raf || reduced || document.hidden) return; last = performance.now() / 1000; raf = requestAnimationFrame(frame); }
   function stop() { if (raf) cancelAnimationFrame(raf); raf = 0; }
   document.addEventListener('visibilitychange', () => { document.hidden ? stop() : start(); });
-  let tr = 0;
+  // en el celular la barra del navegador cambia el alto al hacer scroll: con el mismo ancho
+  // solo se escala lo que depende del alto; se reubica todo solo si cambia el ancho
+  let tr = 0, anchoPrev = W, altoPrev = H;
   window.addEventListener('resize', () => {
     clearTimeout(tr);
-    tr = setTimeout(() => { medir(); items.forEach((it, k) => { if (reduced || it.tipo === 'ostra' || it.tipo === 'tubo' || it.tipo === 'coctel' || it.tipo === 'cebolla') iniciar(it, k); pintar(it); }); }, 150);
+    tr = setTimeout(() => {
+      medir();
+      if (W !== anchoPrev) items.forEach((it, k) => { if (reduced || ['ostra', 'tubo', 'coctel', 'cebolla'].includes(it.tipo)) iniciar(it, k); });
+      else {
+        const k = H / altoPrev;
+        items.forEach(it => {
+          it.y *= k;
+          if (it.e.barra) it.e.barra *= k;
+          if (it.e.casa) it.e.casa[1] *= k;
+          if (it.e.largo) it.e.largo = Math.min(H * 0.32, 260);
+        });
+      }
+      anchoPrev = W; altoPrev = H;
+      items.forEach(pintar);
+    }, 150);
   }, { passive: true });
   start();
 

@@ -7,7 +7,7 @@
 
 import { FILAS } from './sonido.js';
 
-export function iniciarSecuenciador({ raiz, sonido, figuras, t, alAzar = () => {} }) {
+export function iniciarSecuenciador({ raiz, sonido, figuras, t }) {
   const rejilla = raiz.querySelector('.seq-rejilla');
   const btnPlay = raiz.querySelector('[data-seq="play"]');
   const btnAcid = raiz.querySelector('[data-seq="acid"]');
@@ -38,7 +38,7 @@ export function iniciarSecuenciador({ raiz, sonido, figuras, t, alAzar = () => {
         sonido.asegurar();
         const on = sonido.alternar(f, i);
         c.setAttribute('aria-pressed', String(on));
-        if (on && !sonido.tocando) sonido.tocar(f);
+        if (on && !sonido.tocando) sonido.oir(f, i);
       });
       fila.appendChild(c);
       celdas[f][i] = c;
@@ -87,7 +87,6 @@ export function iniciarSecuenciador({ raiz, sonido, figuras, t, alAzar = () => {
     pintar();
     if (!sonido.tocando) sonido.play();
     estadoPlay();
-    alAzar();
   }
   btnAcid.addEventListener('click', azar);
   btnLimpiar.addEventListener('click', () => { sonido.limpiar(); pintar(); });

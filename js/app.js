@@ -26,7 +26,7 @@ const pin = document.getElementById('portada-pin');
 let derretido = null;
 try {
   derretido = iniciarDerretido({
-    seccion, pin, svg: document.querySelector('.logo'), reduced, fondo: false,
+    seccion, pin, svg: document.querySelector('.logo'), reduced, fondo: false, escuchar: false,
     fundidos: [...pin.querySelectorAll('.pista, .bajar')]
   });
 } catch (err) { console.error('[acidlab] derretido:', err); }
@@ -48,8 +48,19 @@ function fondo() {
   }
   body.classList.toggle('tono-verde', u > 0.5);
 }
-window.addEventListener('scroll', fondo, { passive: true });
-window.addEventListener('resize', fondo, { passive: true });
+// un solo manejador por cuadro: primero se lee y pinta el fondo, después se deforma el logo
+let pendiente = false;
+function alMover(forzar) {
+  if (pendiente) return;
+  pendiente = true;
+  requestAnimationFrame(() => {
+    pendiente = false;
+    fondo();
+    if (derretido) { if (forzar === true) derretido.activar(); else derretido.leer(); }
+  });
+}
+window.addEventListener('scroll', alMover, { passive: true });
+window.addEventListener('resize', () => alMover(listo), { passive: true });
 fondo();
 
 /* ---------- intro: cuando el punto de LAB. termina, el resto aparece ---------- */
@@ -84,7 +95,12 @@ const ancho = window.matchMedia('(min-width: 760px)');
 function ubicarSeq() { document.getElementById(ancho.matches ? 'seq-arriba' : 'seq-abajo').appendChild(seq); }
 ubicarSeq();
 ancho.addEventListener('change', ubicarSeq);
+// arranca con un beat fijo cargado y en pausa (el audio necesita el primer toque)
+sonido.fijo();
 const secuenciador = iniciarSecuenciador({ raiz: seq, sonido, figuras: FIGURAS, t: idioma.t });
+secuenciador.pintar();
+// primer gesto real: desbloquea el audio (en iPhone el toque sobre una muestra no basta)
+['touchend', 'click', 'keydown'].forEach(ev => document.addEventListener(ev, () => sonido.desbloquear(), { passive: true }));
 
 // "acid" del logo: lo mismo que el botón acid
 const acid = document.querySelector('.logo .acid');
