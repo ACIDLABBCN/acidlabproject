@@ -8,7 +8,7 @@
    - ostra: rimshot corto (triángulo agudo más un click)
    - ají: bajo acid (sierra con filtro resonante que se abre y cierra)
    - matraz: burbuja (seno que sube de golpe, como algo que hierve)
-   - tubo de ensayo: vidrio (dos senos inarmónicos agudos con cola larga)
+   - tubo de ensayo: tom tonal (golpe de tambor afinado que baja de tono)
    - cerveza: destape (pop que cae de tono y un burbujeo corto)
    Al tocarlos sueltos (var = true) cada golpe varía un poco: otra nota, otro
    largo, otro tono. En el secuenciador suenan parejos, salvo el ají, que
@@ -191,19 +191,24 @@ export function crearSonido() {
     o.type = 'sine';
     o.frequency.setValueAtTime(f0, t);
     o.frequency.exponentialRampToValueAtTime(f0 * (v ? entre(3, 5) : 4), t + 0.06);
-    env(g, t, 0.26, 0.004, 0.09);
+    env(g, t, 0.52, 0.004, 0.09);
     o.connect(g).connect(salida);
     o.start(t); o.stop(t + 0.12);
   }
-  function vidrio(t, v = false) {
-    const f = v ? entre(1400, 2600) : 1900, cola = v ? entre(0.35, 0.8) : 0.5;
-    for (const [k, a] of [[1, 0.12], [2.76, 0.05], [5.4, 0.02]]) {
-      const o = ctx.createOscillator(), g = ctx.createGain();
-      o.type = 'sine'; o.frequency.value = f * k;
-      env(g, t, a, 0.002, cola / k ** 0.3);
-      o.connect(g).connect(salida);
-      o.start(t); o.stop(t + cola + 0.05);
-    }
+  function tom(t, v = false) {
+    const o = ctx.createOscillator(), g = ctx.createGain(), sat = saturador(1.6);
+    const f = v ? entre(110, 190) : 140;
+    o.type = 'sine';
+    o.frequency.setValueAtTime(f * 1.9, t);
+    o.frequency.exponentialRampToValueAtTime(f, t + 0.05);
+    o.frequency.exponentialRampToValueAtTime(f * 0.8, t + 0.3);
+    env(g, t, 0.55, 0.002, v ? entre(0.22, 0.4) : 0.3);
+    o.connect(sat).connect(g).connect(salida);
+    o.start(t); o.stop(t + 0.45);
+    const gc = ctx.createGain();
+    env(gc, t, 0.1, 0.001, 0.015);
+    gc.connect(salida);
+    ruidoA(t, 0.02, [['bandpass', 2500, 1.5]], gc);
   }
   function destape(t, v = false) {
     const o = ctx.createOscillator(), g = ctx.createGain();
@@ -239,7 +244,7 @@ export function crearSonido() {
     else if (nombre === 'ostra') rim(t, true);
     else if (nombre === 'aji') { const n = notaAzar(); bajo(t, n.nota, n.acento, entre(0.12, 0.3)); }
     else if (nombre === 'matraz') burbuja(t, true);
-    else if (nombre === 'tubo') vidrio(t, true);
+    else if (nombre === 'tubo') tom(t, true);
     else if (nombre === 'cerveza') destape(t, true);
   }
 
@@ -261,7 +266,7 @@ export function crearSonido() {
       if (P.coctel[i]) shaker(t, false, i % 2 ? 0.7 : 1);
       if (P.ostra[i]) rim(t);
       if (P.cerveza[i]) destape(t);
-      if (P.tubo[i]) vidrio(t);
+      if (P.tubo[i]) tom(t);
       if (P.matraz[i]) burbuja(t);
       if (P.aji[i]) bajo(t, P.aji[i].nota, P.aji[i].acento, durPaso() * (P.aji[(i + 1) % 16] ? 1 : 1.6));
       const espera = Math.max(0, (t - ctx.currentTime) * 1000);
@@ -331,7 +336,7 @@ export function crearSonido() {
     const adornos = ['tubo', 'matraz', 'cerveza'].sort(() => r() - 0.5).slice(0, 1 + Math.floor(r() * 2));
     for (const f of adornos) if (!G[f]) { const i = [3, 7, 11, 15][Math.floor(r() * 4)]; P[f][i] = true; if (r() < 0.4) P[f][(i + 8) % 16] = true; }
   }
-  // beat de arranque: el groove brejcha tal cual, con vidrio en el 8 y destape en el 16
+  // beat de arranque: el groove brejcha tal cual, con tom en el 8 y destape en el 16
   function fijo() {
     limpiar();
     const G = GROOVES[1], P = patron;
@@ -345,7 +350,7 @@ export function crearSonido() {
     const t = ctx.currentTime + 0.005, n = patron[fila][i];
     if (!n) return;
     if (fila === 'aji') bajo(t, n.nota, n.acento, durPaso() * 1.6);
-    else ({ pez: bombo, limon: hat, cebolla: caja, coctel: shaker, ostra: rim, matraz: burbuja, tubo: vidrio, cerveza: destape })[fila](t);
+    else ({ pez: bombo, limon: hat, cebolla: caja, coctel: shaker, ostra: rim, matraz: burbuja, tubo: tom, cerveza: destape })[fila](t);
   }
   function limpiar() { FILAS.forEach(f => patron[f].fill(null)); }
   function alternar(fila, i) {
