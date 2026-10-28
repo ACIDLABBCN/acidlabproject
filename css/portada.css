@@ -87,6 +87,9 @@ button { font: inherit; color: inherit; }
 }
 .ctl:hover, .ctl[aria-pressed="true"]:not(#btn-sonido) { background: var(--azul); color: var(--verde); }
 #btn-sonido[aria-pressed="false"] { text-decoration: line-through; }
+/* play esperando el primer toque: late hasta que suena */
+.ctl-play.espera { background: var(--azul); color: var(--verde); animation: latido 1.1s ease-in-out infinite; }
+@keyframes latido { 50% { box-shadow: 0 0 0 5px var(--marca); } }
 
 /* ---------- muestras que se mueven (detrás del contenido) ---------- */
 .flota { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
@@ -274,4 +277,5 @@ body.derritiendo .aparece { transition: none; }
   .portada { height: auto; }
   .portada-pin { position: relative; height: 100svh; }
   .seq-c, .cta i, .fig-svg * { transition: none; }
+  .ctl-play.espera { animation: none; }
 }

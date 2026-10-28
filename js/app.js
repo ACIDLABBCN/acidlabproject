@@ -100,6 +100,11 @@ ancho.addEventListener('change', ubicarSeq);
 // toque: el secuenciador queda esperando y ese primer toque (en cualquier parte) lo hace sonar
 sonido.fijo();
 sonido.play();
+// la pista de abajo invita a tocar hasta que suena; después vuelve a "toca las muestras."
+const pista = document.querySelector('.pista');
+function rotularPista() { pista.textContent = idioma.t(sonido.sonando ? 'pista' : 'pista.espera'); }
+rotularPista();
+sonido.alEstado(rotularPista);
 const secuenciador = iniciarSecuenciador({ raiz: seq, sonido, figuras: FIGURAS, t: idioma.t });
 secuenciador.pintar();
 // primer gesto real: desbloquea el audio (en iPhone el toque sobre una muestra no basta)
@@ -126,4 +131,4 @@ const rotulo = iniciarRotulo({
   reduced
 });
 
-idioma.alCambiar(t => { secuenciador.rotular(t); flotantes.renombrar(); rotularSonido(); rotulo.renombrar(); });
+idioma.alCambiar(t => { secuenciador.rotular(t); flotantes.renombrar(); rotularSonido(); rotulo.renombrar(); rotularPista(); });

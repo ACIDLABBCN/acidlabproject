@@ -38,7 +38,7 @@ export function crearSonido() {
   let salida = null, eco = null, ecoMaster = null, ecoSeq = null, fxSeq = null, bus = null, ciclo = 0;
   const patron = Object.fromEntries(FILAS.map(f => [f, Array(PASOS).fill(null)]));
   let tocando = false, paso = 0, proximo = 0, timer = 0, bpm = BPM;
-  const oyentes = [];
+  const oyentes = [], oyentesEstado = [];
   const r = Math.random;
   const entre = (a, b) => a + (b - a) * r();
 
@@ -47,6 +47,8 @@ export function crearSonido() {
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return null;
     ctx = new AC();
+    // avisa cuando el audio pasa de esperando a sonando (el primer toque lo destraba)
+    ctx.onstatechange = () => oyentesEstado.forEach(fn => fn());
     const comp = ctx.createDynamicsCompressor();
     comp.threshold.value = -14; comp.ratio.value = 4; comp.attack.value = 0.003; comp.release.value = 0.12;
     master = ctx.createGain();
@@ -473,6 +475,7 @@ export function crearSonido() {
     asegurar, desbloquear, tocar, oir, play, stop, azar, fijo, limpiar, alternar, silenciar, fijarBpm, patron,
     get bpm() { return bpm; },
     alPaso(fn) { oyentes.push(fn); },
+    alEstado(fn) { oyentesEstado.push(fn); },
     get tocando() { return tocando; },
     // el audio corre de verdad (el navegador ya recibió un toque); antes, el secuenciador espera en play
     get sonando() { return !!ctx && ctx.state === 'running'; },

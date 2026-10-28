@@ -58,10 +58,14 @@ export function iniciarSecuenciador({ raiz, sonido, figuras, t }) {
   function pintar() {
     for (const f of FILAS) celdas[f].forEach((c, i) => c.setAttribute('aria-pressed', String(!!sonido.patron[f][i])));
   }
+  // en play pero sin audio todavía (falta el primer toque): el botón dice "play" y late
   function estadoPlay(tt = t) {
-    btnPlay.setAttribute('aria-pressed', String(sonido.tocando));
-    btnPlay.textContent = tt(sonido.tocando ? 'stop' : 'play');
+    const espera = sonido.tocando && !sonido.sonando;
+    btnPlay.setAttribute('aria-pressed', String(sonido.tocando && !espera));
+    btnPlay.classList.toggle('espera', espera);
+    btnPlay.textContent = tt(espera || !sonido.tocando ? 'play' : 'stop');
   }
+  sonido.alEstado(() => estadoPlay());
 
   // cuarto del loop a la vista (1 a 4); el compás (1 o 2) sale de ahí
   let cuarto = 0;

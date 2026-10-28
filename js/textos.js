@@ -9,7 +9,7 @@ const CLAVE_LS = 'acidlab-idioma';
 export const TEXTOS = {
   es: {
     'rot.1': 'abrimos pronto.', 'rot.2': 'mientras, juega con el secuenciador.', pronto: 'próximamente', que: 'crudos, ceviches y pisco sour',
-    pista: 'toca las muestras.', bajar: 'bajar',
+    pista: 'toca las muestras.', 'pista.espera': 'toca en cualquier parte para escuchar.', bajar: 'bajar',
     'seq.tit': 'el lab suena.', 'seq.sub': 'cada muestra es un sonido.', bpm: 'bpm', 'aria.bpm': 'tempo', 'bpm.menos': 'más lento', 'bpm.mas': 'más rápido',
     play: 'play', stop: 'stop', acid: 'acid', limpiar: 'borrar', 'seq.nota': 'toca acid para un beat al azar.',
     'sonido.si': 'sonido sí', 'sonido.no': 'sonido no',
@@ -22,7 +22,7 @@ export const TEXTOS = {
   },
   ca: {
     'rot.1': 'obrim aviat.', 'rot.2': 'mentrestant, juga amb el seqüenciador.', pronto: 'properament', que: 'crus, ceviches i pisco sour',
-    pista: 'toca les mostres.', bajar: 'baixa',
+    pista: 'toca les mostres.', 'pista.espera': 'toca a qualsevol lloc per escoltar.', bajar: 'baixa',
     'seq.tit': 'el lab sona.', 'seq.sub': 'cada mostra és un so.', bpm: 'bpm', 'aria.bpm': 'tempo', 'bpm.menos': 'més lent', 'bpm.mas': 'més ràpid',
     play: 'play', stop: 'stop', acid: 'acid', limpiar: 'esborra', 'seq.nota': 'toca acid per a un beat a l’atzar.',
     'sonido.si': 'so sí', 'sonido.no': 'so no',
