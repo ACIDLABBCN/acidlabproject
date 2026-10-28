@@ -290,13 +290,14 @@ export function crearSonido() {
     o.type = 'sine';
     o.frequency.setValueAtTime(f0, t);
     o.frequency.exponentialRampToValueAtTime(f0 * 0.25, t + 0.035);
-    env(g, t, 0.42, 0.001, 0.06);
+    // pop redondo: el tono y el soplido entran en unos milisegundos, no de golpe (de golpe chasquea)
+    env(g, t, 0.32, 0.004, 0.08);
     o.connect(g).connect(salida);
-    o.start(t); o.stop(t + 0.08);
+    o.start(t); o.stop(t + 0.1);
     const gp = ctx.createGain();
-    env(gp, t, 0.25, 0.001, 0.02);
+    env(gp, t, 0.1, 0.003, 0.03);
     gp.connect(salida);
-    ruidoA(t, 0.02, [['bandpass', 1600, 1.2]], gp);
+    ruidoA(t, 0.04, [['bandpass', 1200, 1.2], ['lowpass', 3000]], gp);
     // burbujeo: ruido agudo que se apaga
     const gf = ctx.createGain();
     gf.gain.setValueAtTime(0.0001, t + 0.02);
