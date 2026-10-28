@@ -81,7 +81,7 @@
           <svg viewBox="0 0 12 12"><path d="M6 1 L11 11 L1 11 Z"/></svg>
         </span>
         <span class="texto">
-          <b class="coming" data-i18n="coming">coming soon.</b>
+          <b class="coming"><span class="frase">abrimos pronto.</span></b>
           <span data-i18n="pronto">próximamente</span>
           <span class="que" data-i18n="que">crudos, ceviches y pisco sour</span>
         </span>
@@ -116,18 +116,35 @@
     <button type="button" class="ctl" data-seq="limpiar" data-i18n="limpiar">borrar</button>
     <span class="bpm" role="group" aria-label="tempo" data-i18n-aria="aria.bpm">
       <button type="button" class="ctl ctl-bpm" data-bpm="-" aria-label="más lento" data-i18n-aria="bpm.menos">&minus;</button>
-      <span class="bpm-txt"><span class="bpm-val" aria-live="polite">126</span> <span data-i18n="bpm">bpm</span></span>
+      <span class="bpm-txt"><span class="bpm-val" aria-live="polite">115</span> <span data-i18n="bpm">bpm</span></span>
       <button type="button" class="ctl ctl-bpm" data-bpm="+" aria-label="más rápido" data-i18n-aria="bpm.mas">+</button>
     </span>
-    <span class="seq-mitades" role="group" aria-label="mitad del compás" data-i18n-aria="aria.mitad">
-      <button type="button" class="ctl" data-mitad="1" aria-pressed="true">1-8</button>
-      <button type="button" class="ctl" data-mitad="2" aria-pressed="false">9-16</button>
+    <span class="seq-mitades seq-compases" role="group" aria-label="parte del loop" data-i18n-aria="aria.mitad">
+      <button type="button" class="ctl" data-compas="1" aria-pressed="true">1-16</button>
+      <button type="button" class="ctl" data-compas="2" aria-pressed="false">17-32</button>
+    </span>
+    <span class="seq-mitades seq-cuartos" role="group" aria-label="parte del loop" data-i18n-aria="aria.mitad">
+      <button type="button" class="ctl" data-cuarto="1" aria-pressed="true">1-8</button>
+      <button type="button" class="ctl" data-cuarto="2" aria-pressed="false">9-16</button>
+      <button type="button" class="ctl" data-cuarto="3" aria-pressed="false">17-24</button>
+      <button type="button" class="ctl" data-cuarto="4" aria-pressed="false">25-32</button>
     </span>
   </div>
   <div class="seq-rejilla"></div>
   <p class="seq-nota" data-i18n="seq.nota">toca acid para un beat al azar.</p>
 </section>
 
+<!-- filtro del titular que se derrite (rotulo.js): ruido estirado en vertical que solo desplaza hacia abajo -->
+<svg class="filtros" width="0" height="0" aria-hidden="true" focusable="false">
+  <filter id="gotea" x="-5%" y="-10%" width="110%" height="260%" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="0.07 0.004" numOctaves="2" seed="7" result="ruido"/>
+    <feComponentTransfer in="ruido" result="abajo">
+      <feFuncR type="table" tableValues="0.5 0.5"/>
+      <feFuncG type="linear" slope="0.5" intercept="0"/>
+    </feComponentTransfer>
+    <feDisplacementMap in="SourceGraphic" in2="abajo" scale="0" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
 <script type="module" src="js/app.js"></script>
 </body>
 </html>

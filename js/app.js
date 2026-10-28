@@ -13,6 +13,7 @@ import { iniciarSecuenciador } from './secuenciador.js';
 import { iniciarFlotantes } from './flotantes.js';
 import { FIGURAS } from './figuras.js';
 import { crearIdioma } from './textos.js';
+import { iniciarRotulo } from './rotulo.js';
 
 const html = document.documentElement;
 const body = document.body;
@@ -95,8 +96,10 @@ const ancho = window.matchMedia('(min-width: 760px)');
 function ubicarSeq() { document.getElementById(ancho.matches ? 'seq-arriba' : 'seq-abajo').appendChild(seq); }
 ubicarSeq();
 ancho.addEventListener('change', ubicarSeq);
-// arranca con un beat fijo cargado y en pausa (el audio necesita el primer toque)
+// arranca con el beat fijo cargado y en play. El navegador no deja sonar nada antes del primer
+// toque: el secuenciador queda esperando y ese primer toque (en cualquier parte) lo hace sonar
 sonido.fijo();
+sonido.play();
 const secuenciador = iniciarSecuenciador({ raiz: seq, sonido, figuras: FIGURAS, t: idioma.t });
 secuenciador.pintar();
 // primer gesto real: desbloquea el audio (en iPhone el toque sobre una muestra no basta)
@@ -115,4 +118,12 @@ const flotantes = iniciarFlotantes({
 });
 sonido.alPaso((paso, suenan) => suenan.forEach(f => flotantes.saltar(f)));
 
-idioma.alCambiar(t => { secuenciador.rotular(t); flotantes.renombrar(); rotularSonido(); });
+/* ---------- titular que rota y se derrite ---------- */
+const rotulo = iniciarRotulo({
+  el: document.querySelector('.pronto-rot .frase'),
+  filtro: document.getElementById('gotea'),
+  frases: () => [idioma.t('rot.1'), idioma.t('rot.2')],
+  reduced
+});
+
+idioma.alCambiar(t => { secuenciador.rotular(t); flotantes.renombrar(); rotularSonido(); rotulo.renombrar(); });

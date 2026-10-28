@@ -128,8 +128,13 @@ body.tono-verde .fig-svg[data-familia="lab"] { --fc: var(--azul); --li: var(--az
 .pronto-rot { display: grid; grid-template-columns: auto 1fr; gap: 0 14px; align-items: start; margin-left: clamp(0px, 6vw, 96px); font-size: 16px; line-height: 1.2; color: var(--tx2); }
 .pronto-rot .formas { display: flex; flex-direction: column; gap: 8px; fill: var(--tx); padding-top: .9em; }
 .pronto-rot .formas svg { width: 13px; height: 13px; display: block; }
-/* coming soon: titular grande del book (Helvetica, minúscula, con punto) */
-.pronto-rot .coming { display: block; font-weight: 400; font-size: clamp(46px, 6.6vw, 112px); letter-spacing: -.035em; line-height: .88; margin-bottom: 12px; color: var(--tx); white-space: nowrap; }
+/* titular grande del book (Helvetica, minúscula, con punto). Rota entre frases (rotulo.js):
+   la caja guarda el alto de dos líneas para que el cambio no mueva lo de abajo; la frase
+   larga va más chica y puede ocupar hasta tres */
+.pronto-rot .coming { display: block; font-weight: 400; font-size: clamp(34px, 4.4vw, 74px); letter-spacing: -.035em; line-height: .88; margin-bottom: 12px; color: var(--tx); white-space: nowrap; min-height: 1.76em; }
+.pronto-rot .frase { display: block; transform-origin: 50% 0; will-change: transform, opacity; }
+.pronto-rot .frase.larga { font-size: .56em; line-height: .95; letter-spacing: -.025em; white-space: normal; max-width: 13em; }
+.filtros { position: absolute; width: 0; height: 0; overflow: hidden; }
 .pronto-rot .que { display: block; margin-top: 2px; }
 
 .pista { position: absolute; left: calc(var(--gutter) + 10px); bottom: 22px; z-index: 2; margin: 0; font-size: 14px; color: var(--tx2); }
@@ -188,6 +193,8 @@ body.derritiendo .aparece { transition: none; }
 .bpm .ctl-bpm { min-width: 32px; padding: 7px 0; font-size: 16px; }
 .bpm-txt { min-width: 74px; text-align: center; font-size: 13px; border-top: 1px solid var(--azul); border-bottom: 1px solid var(--azul); align-self: stretch; display: grid; place-items: center; font-variant-numeric: tabular-nums; }
 .seq-mitades { display: none; gap: 0; margin-left: auto; }
+/* escritorio: un compás a la vista; celular: un cuarto del loop */
+.seq-compases { display: inline-flex; }
 .seq-mitades .ctl { min-width: 52px; }
 .seq-mitades .ctl + .ctl { border-left: 0; }
 .seq-rejilla { display: grid; gap: 4px; }
@@ -200,7 +207,8 @@ body.derritiendo .aparece { transition: none; }
 }
 .seq-c.tiempo { border-width: 2px; }
 /* separador cada cuatro pasos */
-.seq-c:nth-child(6), .seq-c:nth-child(10), .seq-c:nth-child(14) { margin-left: 4px; }
+.seq-c.sep { margin-left: 4px; }
+.seq-rejilla[data-compas="1"] .seq-c[data-c="2"], .seq-rejilla[data-compas="2"] .seq-c[data-c="1"] { display: none; }
 .seq-c[aria-pressed="true"] { background: var(--azul); }
 .seq-c.ahora { background: var(--marca); }
 .seq-c.ahora[aria-pressed="true"] { background: var(--azul); box-shadow: inset 0 0 0 3px var(--marca); transform: scale(.88); }
@@ -234,7 +242,7 @@ body.derritiendo .aparece { transition: none; }
   .seq-sub, .seq-nota { display: none; }
   .seq-c { aspect-ratio: auto; height: 20px; min-height: 0; }
   .seq { gap: 8px; padding: 10px; }
-  .pronto-rot .coming { font-size: clamp(40px, 5.4vw, 84px); }
+  .pronto-rot .coming { font-size: clamp(30px, 3.6vw, 60px); }
 }
 /* celular: la llegada es logo, coming soon e ingredientes; el secuenciador vive abajo, una mitad a la vez */
 @media (max-width: 759px) {
@@ -242,15 +250,19 @@ body.derritiendo .aparece { transition: none; }
   .pronto-rot { margin-left: 0; }
   .hero-der { align-content: start; }
   .pista { right: 110px; }
-  .seq-mitades { display: inline-flex; }
+  .seq-compases { display: none; }
+  .seq-cuartos { display: inline-flex; }
   .seq-fila { grid-template-columns: 36px repeat(8, minmax(0, 1fr)); gap: 5px; }
-  .seq-rejilla[data-mitad="1"] .seq-c[data-m="2"], .seq-rejilla[data-mitad="2"] .seq-c[data-m="1"] { display: none; }
+  .seq-rejilla:not([data-cuarto="1"]) .seq-c[data-m="1"], .seq-rejilla:not([data-cuarto="2"]) .seq-c[data-m="2"],
+  .seq-rejilla:not([data-cuarto="3"]) .seq-c[data-m="3"], .seq-rejilla:not([data-cuarto="4"]) .seq-c[data-m="4"] { display: none; }
   .seq-c { min-height: 30px; }
-  .seq-c:nth-child(n) { margin-left: 0; }
-  .seq-rejilla[data-mitad="1"] .seq-c:nth-child(6), .seq-rejilla[data-mitad="2"] .seq-c:nth-child(14) { margin-left: 6px; }
+  .seq-c.sep { margin-left: 0; }
+  .seq-c.sep-m { margin-left: 6px; }
   .seq-et { width: 36px; height: 28px; }
   .bpm { order: 5; }
   .pronto-rot .coming { white-space: normal; }
+  /* en celular el secuenciador está más abajo: la frase lo apunta */
+  .pronto-rot .frase.larga::after { content: " ↓"; }
   .abajo { align-content: start; }
 }
 
