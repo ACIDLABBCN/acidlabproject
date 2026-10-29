@@ -8,26 +8,26 @@ const CLAVE_LS = 'acidlab-idioma';
 
 export const TEXTOS = {
   es: {
-    'rot.1': 'abrimos pronto.', 'rot.2': 'mientras, juega con el secuenciador.', pronto: 'próximamente', que: 'crudos, ceviches y pisco sour',
+    'rot.1': 'abrimos pronto.', 'rot.2': 'mientras, juega con el secuenciador.', pronto: 'próximamente', que: 'CRUDOS Y CÓCTELES',
     pista: 'toca las muestras.', 'pista.espera': 'toca en cualquier parte para escuchar.', bajar: 'bajar',
     'seq.tit': 'el lab suena.', 'seq.sub': 'cada muestra es un sonido.', bpm: 'bpm', 'aria.bpm': 'tempo', 'bpm.menos': 'más lento', 'bpm.mas': 'más rápido',
     play: 'play', stop: 'stop', acid: 'acid', limpiar: 'borrar', 'seq.nota': 'toca acid para un beat al azar.',
     'sonido.si': 'sonido sí', 'sonido.no': 'sonido no',
     abrimos: 'abrimos pronto en sant antoni, barcelona.', 'cta.sub': 'síguenos en instagram para saber cuándo abrimos.',
-    pie: 'acid LAB. · crudos & cócteles · sant antoni, barcelona',
+    pie: 'acid LAB. · CRUDOS Y CÓCTELES · sant antoni, barcelona',
     'aria.acid': 'acid: armar un beat al azar', 'aria.idioma': 'Idioma', 'aria.seq': 'secuenciador', 'aria.mitad': 'parte del loop',
     paso: 'paso',
     pez: 'pez', limon: 'limón', cebolla: 'cebolla', coctel: 'cóctel', ostra: 'ostra', aji: 'ají',
     matraz: 'matraz', tubo: 'tubo de ensayo', cerveza: 'cerveza'
   },
   ca: {
-    'rot.1': 'obrim aviat.', 'rot.2': 'mentrestant, juga amb el seqüenciador.', pronto: 'properament', que: 'crus, ceviches i pisco sour',
+    'rot.1': 'obrim aviat.', 'rot.2': 'mentrestant, juga amb el seqüenciador.', pronto: 'properament', que: 'CRUS I CÒCTELS',
     pista: 'toca les mostres.', 'pista.espera': 'toca a qualsevol lloc per escoltar.', bajar: 'baixa',
     'seq.tit': 'el lab sona.', 'seq.sub': 'cada mostra és un so.', bpm: 'bpm', 'aria.bpm': 'tempo', 'bpm.menos': 'més lent', 'bpm.mas': 'més ràpid',
     play: 'play', stop: 'stop', acid: 'acid', limpiar: 'esborra', 'seq.nota': 'toca acid per a un beat a l’atzar.',
     'sonido.si': 'so sí', 'sonido.no': 'so no',
     abrimos: 'obrim aviat a sant antoni, barcelona.', 'cta.sub': 'segueix-nos a instagram per saber quan obrim.',
-    pie: 'acid LAB. · crus & còctels · sant antoni, barcelona',
+    pie: 'acid LAB. · CRUS I CÒCTELS · sant antoni, barcelona',
     'aria.acid': 'acid: fer un beat a l’atzar', 'aria.idioma': 'Idioma', 'aria.seq': 'seqüenciador', 'aria.mitad': 'part del loop',
     paso: 'pas',
     pez: 'peix', limon: 'llimona', cebolla: 'ceba', coctel: 'còctel', ostra: 'ostra', aji: 'ají',
